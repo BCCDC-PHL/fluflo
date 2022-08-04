@@ -11,6 +11,16 @@ The original intent of the pipeline was for Influenza A sequences, with the flex
 afforded by Nextflow, to be applied to other pathogens, used with various executors (SGE vs. SLURM),
 and easily adjusted.
 
+## Table of Contents
+
+- [Introduction](#introduction)
+- [Quick-Start Guide](#quick-start guide)
+- [Dependencies](#dependencies)
+- [Installation](#installation)
+- [Input](#input)
+- [Output](#output)
+- [Workflow](#workflow)
+
 ## Quick-Start Guide
 
 Change into project directory:
@@ -25,18 +35,7 @@ For details on available arguments, enter:
 ```
 nextflow run main.nf --help
 ```
-## Installation
 
-To copy the program into a directory of your choice, from desired directory run:
-```
-git clone https://github.com/j3551ca/fluflo.git
-cd fluflo
-nextflow run main.nf -profile conda --work_dir "/home/user/flu/input_data/"
-```
-or run directly using:
-```
-nextflow run j3551ca/fluflo -profile conda --work_dir "/home/user/flu/input_data/"
-```
 ## Dependencies
 
 This bioinformatic pipeline requires Nextflow:
@@ -54,6 +53,19 @@ java -version
 ```
 The conda environment activated upon running fluflo is from
 /home/kkamelian/.conda/envs/nextstrain/
+
+## Installation
+
+To copy the program into a directory of your choice, from desired directory run:
+```
+git clone https://github.com/j3551ca/fluflo.git
+cd fluflo
+nextflow run main.nf -profile conda --work_dir "/home/user/flu/input_data/"
+```
+or run directly using:
+```
+nextflow run j3551ca/fluflo -profile conda --work_dir "/home/user/flu/input_data/"
+```
 
 ## Input
 
@@ -99,4 +111,4 @@ reports:
 
 ## Workflow
 
-![image]fluflo_workflow.png
+![image](fluflo_workflow.png)
