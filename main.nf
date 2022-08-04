@@ -205,6 +205,7 @@ workflow {
   export(refine.out.combine(ancestral.out.combine(translate.out)))
 }
 
+/**
 workflow.onComplete {
 
     def msg = """\
@@ -218,10 +219,10 @@ workflow.onComplete {
         """
         .stripIndent()
 
-    sendMail(to: 'jessica.caleta@bccdc.ca', subject: 'Flu Tree Analysis Complete on Sabin', body: msg)
+    sendMail(to: '', subject: 'Flu Tree Analysis Complete on Sabin', body: msg)
 }
 
-/**
+
 
 process clean {
   tag "Removing Nextflow work directory?"
