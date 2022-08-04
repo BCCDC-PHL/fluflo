@@ -1,4 +1,4 @@
-![image](fluflo_logo.png)
+![image](/pics/fluflo_logo.png)
 
 ## Introduction
 
@@ -110,4 +110,4 @@ reports:
 
 ## Workflow
 
-![image](fluflo_workflow.png)
+![image](/pics/fluflo_workflow.png)
