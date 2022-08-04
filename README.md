@@ -99,4 +99,4 @@ reports:
 
 ## Workflow
 
-![image]/fluflo_workflow.png
+![image]fluflo_workflow.png
