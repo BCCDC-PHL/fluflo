@@ -1,11 +1,10 @@
 ![image](fluflo_logo.png)
-Nextflow pipeline for generation of phylogenetic trees to be visualized in Auspice. 
 
 ## Introduction
 
-FLUFLO is a Nextflow pipeline written by JMC that has been adapted from a snakefile by
-Kimia Kamelian which generates phylogenetic trees that can be visualized in Auspice from
-[Nextstrain](https://docs.nextstrain.org/projects/auspice/en/stable/index.html)
+Nextflow pipeline for generation of phylogenetic trees to be visualized in Auspice. 
+FLUFLO is written by JMC and adapted from a snakefile by Kimia Kamelian which generates 
+phylogenetic trees that can be visualized in Auspice from [Nextstrain](https://docs.nextstrain.org/projects/auspice/en/stable/index.html)
 
 The original intent of the pipeline was for Influenza A sequences, with the flexibility
 afforded by Nextflow, to be applied to other pathogens, used with various executors (SGE vs. SLURM),
