@@ -71,6 +71,12 @@ data directory: ${params.work_dir}
 
 """
 
+/**
+---------------------------------------------------------------------------------
+process definition
+---------------------------------------------------------------------------------
+*/
+
 process align {
 
   tag "Aligning sequences to ${params.ref} & filling gaps with N"
@@ -193,6 +199,12 @@ process export {
       """
 }
 
+/**
+---------------------------------------------------------------------------------
+workflow
+---------------------------------------------------------------------------------
+*/
+
 workflow {
   seq_ch = Channel.fromPath(params.seqs, checkIfExists:true)
   ref_ch = Channel.fromPath(params.ref, checkIfExists:true)
@@ -205,6 +217,11 @@ workflow {
   export(refine.out.combine(ancestral.out.combine(translate.out)))
 }
 
+/**
+---------------------------------------------------------------------------------
+optional notification of completion
+---------------------------------------------------------------------------------
+*/
 /**
 workflow.onComplete {
 
