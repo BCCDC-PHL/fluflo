@@ -2,12 +2,12 @@
 
 ## Introduction
 
-Nextflow pipeline for generation of phylogenetic trees to be visualized in Auspice. 
+Nextflow pipeline for generation of phylogenetic trees to be visualized with Auspice. 
 FLUFLO is written by JMC and adapted from a snakefile by Kimia Kamelian which generates 
-phylogenetic trees that can be visualized in Auspice from [Nextstrain](https://docs.nextstrain.org/projects/auspice/en/stable/index.html)
+phylogenies with the Augur bioinformatic toolkit (MAFFT, IQ-TREE, TimeTree..) that can be visualized in Auspice from [Nextstrain](https://docs.nextstrain.org/projects/auspice/en/stable/index.html)
 
 The original intent of the pipeline was for Influenza A sequences, with the flexibility
-afforded by Nextflow, to be applied to other pathogens, used with various executors (SGE vs. SLURM),
+afforded by Nextflow to be applied to other pathogens, used with various workload managers (SGE vs. SLURM),
 and easily adjusted.
 
 ## Table of Contents
@@ -19,6 +19,7 @@ and easily adjusted.
 - [Input](#input)
 - [Output](#output)
 - [Workflow](#workflow)
+- [References](#references)
 
 ## Quick-Start Guide
 
@@ -111,3 +112,18 @@ reports:
 ## Workflow
 
 ![image](/pics/fluflo_workflow.png)
+
+## References
+
+1. Hadfield, J. et al. NextStrain: Real-time tracking of pathogen evolution. Bioinformatics 34, 4121–3 (2018).![image](https://user-images.githubusercontent.com/39065261/183123590-d748af25-8bfb-48e8-9e1a-0a960bf01d66.png)
+
+2. Huddleston J, Hadfield J, Sibley TR, Lee J, Fay K, Ilcisin M, Harkins E, Bedford T, Neher RA, Hodcroft EB, (2021). Augur: a bioinformatics toolkit for phylogenetic analyses of human pathogens. Journal of Open Source Software, 6(57), 2906, https://doi.org/10.21105/joss.02906
+
+3. Katoh, K., Misawa, K., Kuma, K., & Miyata, T. (2002). MAFFT: a novel method for rapid
+multiple sequence alignment based on fast Fourier transform. Nucleic Acids Research,
+30(14), 3059–3066. https://doi.org/10.1093/nar/gkf436
+
+4. Nguyen, L.-T., Schmidt, H. A., Haeseler, A. von, & Minh, B. Q. (2014). IQ-TREE: A Fast and
+Effective Stochastic Algorithm for Estimating Maximum-Likelihood Phylogenies. Molecular Biology and Evolution, 32(1), 268–274. https://doi.org/10.1093/molbev/msu300
+
+5. Sagulenko, P., Puller, V., & Neher, R. A. (2018). TreeTime: Maximum-likelihood phylodynamic analysis. Virus Evolution, 4(1). https://doi.org/10.1093/ve/vex042
