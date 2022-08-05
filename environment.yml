@@ -1,0 +1,15 @@
+name: nextstrain
+channels:
+  - conda-forge
+  - defaults
+  - bioconda
+  - r
+dependencies:
+  - git
+  - nextalign=0.1.6
+  - nodejs
+  - python[version='>=3.6*']
+  - auspice
+  - nextstrain-cli
+  - pip
+  - augur[version='>=11.3.0']
