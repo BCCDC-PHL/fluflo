@@ -12,4 +12,4 @@ dependencies:
   - auspice
   - nextstrain-cli
   - pip
-  - augur[version='>=11.3.0']
+  - augur
