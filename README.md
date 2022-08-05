@@ -24,7 +24,7 @@ and easily adjusted.
 
 Change into project directory:
 ```
-cd /home/jess.cal/flu/fluflo/
+cd /home/user/flu/fluflo/
 ```
 Run FLUFLO pipeline:
 ```
