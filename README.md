@@ -38,7 +38,7 @@ nextflow run main.nf --help
 
 ## Dependencies
 
-[Conda](https://conda.io/projects/conda/en/latest/user-guide/install/index.html) is required
+[Conda](https://conda.io/projects/conda/en/latest/user-guide/install/index.html) is required to build an environment with required workflow dependencies.
 
 This bioinformatic pipeline requires Nextflow:
 ```
@@ -53,12 +53,12 @@ Nextflow requires Java v8.0+, so check that it is installed:
 ```
 java -version
 ```
-The conda environment activated upon running fluflo is specified in the
+The OS-independent conda environment activated upon running fluflo is specified in the
 ```environment.yml``` file of the project directory and is built when 
 ```-profile conda``` is included in the command line. Nextflow will save
 the environment to the project directory by default. Alternatively, the 
 necessary conda environment can be saved to a different shared location 
-accesible to compute nodes using ```--conda_cache /path/to/new/location/```.
+accesible to compute nodes by adding ```--conda_cache /path/to/new/location/```.
 
 ## Installation
 
