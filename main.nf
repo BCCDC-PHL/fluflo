@@ -94,7 +94,7 @@ process align {
   --reference-sequence ${reference} \
   --output aligned.fasta \
   --fill-gaps \
-  --nthreads 32
+  --nthreads ${task.cpus}
   """
 }
 
