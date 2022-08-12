@@ -33,6 +33,7 @@ Optional arguments:
  --lat_long                     Sample latitudes and longitudes [./config/lat_longs.csv]
  --auspice                      Specifications for visualization in auspice (ex. title) [./config/auspice_config.json]
  --divergence_units             Units used to measure divergence in phylogeny refining step [mutations]
+ --conda_cache                  File system path where Conda env is to be stored [fluflo-main/work/]
  --version                      Current fluflo version number
  --help                         This usage statement
         """
