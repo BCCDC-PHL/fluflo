@@ -29,7 +29,7 @@ cd /home/user/flu/fluflo/
 ```
 Run FLUFLO pipeline:
 ```
-nextflow run main.nf -profile conda --work_dir "/home/user/flu/input_data/"
+nextflow run main.nf -profile conda --work_dir /home/user/flu/input_data/
 ```
 For details on available arguments, enter:
 ```
@@ -66,11 +66,11 @@ To copy the program into a directory of your choice, from desired directory run:
 ```
 git clone https://github.com/j3551ca/fluflo.git
 cd fluflo
-nextflow run main.nf -profile conda --work_dir "/home/user/flu/input_data/"
+nextflow run main.nf -profile conda --work_dir /home/user/flu/input_data/
 ```
 or run directly using:
 ```
-nextflow run j3551ca/fluflo -profile conda --work_dir "/home/user/flu/input_data/"
+nextflow run j3551ca/fluflo -profile conda --work_dir /home/user/flu/input_data/
 ```
 
 ## Input
