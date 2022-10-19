@@ -130,6 +130,12 @@ Solution:
 conda activate Nextstrain
 pip install nextstrain-augur==13.0.0
 ```
+Error:
+augur refine is using TreeTime version 0.8.6
+
+Solution:
+
+
 
 ## References
 
