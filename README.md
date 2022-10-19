@@ -19,6 +19,7 @@ and easily adjusted.
 - [Input](#input)
 - [Output](#output)
 - [Workflow](#workflow)
+- [Troubleshooting](#troubleshooting)
 - [References](#references)
 
 ## Quick-Start Guide
@@ -118,6 +119,17 @@ reports:
 ## Workflow
 
 ![image](/pics/fluflo_workflow.png)
+
+## Troubleshooting
+
+Error: 
+
+
+Solution: 
+```
+conda activate Nextstrain
+pip install nextstrain-augur==13.0.0
+```
 
 ## References
 
