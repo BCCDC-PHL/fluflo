@@ -114,10 +114,9 @@ process tree {
   -ninit 10 \
   -n 10 \
   -me 0.05 \
-  -nt auto \
+  -nt ${task.cpus} \
   -s ${aln} \
-  -m GTR+I+R \
-  -T ${task.cpus}
+  -m GTR+I+R 
   """
 }
 
