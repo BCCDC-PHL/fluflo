@@ -79,6 +79,34 @@ process definition
 ---------------------------------------------------------------------------------
 */
 
+process extract_seqs{
+  tag "Optional process to automatically extract relevant segments from FluViewer consensus.fa"
+  publishDir "${params.work_dir}/results/", mode: 'copy'
+
+  input:
+  path(sequences_path)
+
+  output:
+  path("extracted_seqs.fasta")
+
+  script:
+  concat = params.concat ? '--concat' : ''
+  segment = params.segment != 'NONE' ? "--segment ${params.segment}" : ''
+  
+  """
+  if [ ! -d ${sequences_path} ]; then
+    echo "ERROR: Provided path must be a directory when running automatic sequence extraction with --concat or --segment."
+    exit 1
+  fi
+
+  extract_sequences.py \
+  --inpath ${sequences_path} \
+  --outpath extracted_seqs.fasta \
+  ${concat} \
+  ${segment}
+  """
+}
+
 process align {
 
   tag "Aligning sequences to ${params.ref} & filling gaps with N"
@@ -126,7 +154,7 @@ process refine {
   publishDir "${params.work_dir}/results/", mode: 'copy'
 
   input:
-  tuple file(tree), file(msa)
+  tuple file(tree), file(msa), file(metadata)
 
   output:
   tuple path("tree.nwk"), path("branch_lengths.json")
@@ -135,7 +163,7 @@ process refine {
   augur refine \
       --tree ${tree} \
       --alignment ${msa} \
-      --metadata ${params.meta} \
+      --metadata ${metadata} \
       --timetree \
       --keep-root \
       --divergence-units ${params.divergence_units} \
@@ -154,14 +182,14 @@ process ancestral {
     output:
     path("nt_muts.json")
 
-        """
-        augur ancestral \
-            --tree ${refine_tree} \
-            --alignment ${msa} \
-            --output-node-data nt_muts.json \
-            --keep-overhangs \
-            --keep-ambiguous
-        """
+    """
+    augur ancestral \
+        --tree ${refine_tree} \
+        --alignment ${msa} \
+        --output-node-data nt_muts.json \
+        --keep-overhangs \
+        --keep-ambiguous
+    """
 }
 
 process translate {
@@ -183,6 +211,21 @@ process translate {
       """
 }
 
+process fix_aa_json {
+  tag "Fixing aa_muts.json for concatenated workflow."
+  publishDir "${params.work_dir}/results/", mode: 'copy'
+
+  input:
+  file(aa_muts_json)
+
+  output:
+  file("aa_muts_fix.json")
+
+  """
+  fix_aa_muts.py ${aa_muts_json} aa_muts_fix.json
+  """
+}
+
 process export {
   tag "Exporting data files for auspice"
   publishDir "${params.work_dir}/auspice", mode: 'copy'
@@ -190,23 +233,25 @@ process export {
   input:
   tuple file(refine_tree), file(branch_len), file(nt_muts),\
   file(aa_muts)
+  file(metadata)
+  tuple file(auspice_config), file(colors), file(lat_long)
 
   output:
-  file("flu_na.json")
+  file("flu.json")
 
-      """
-      export AUGUR_RECURSION_LIMIT=${params.recursion_limit}
+  """
+  export AUGUR_RECURSION_LIMIT=${params.recursion_limit}
 
-      augur export v2 \
-          --tree ${refine_tree} \
-          --metadata ${params.meta} \
-          --node-data ${branch_len} ${nt_muts} ${aa_muts} \
-          --colors ${params.colors} \
-          --lat-longs ${params.lat_long} \
-          --minify-json \
-          --auspice-config ${params.auspice} \
-          --output flu_na.json
-      """
+  augur export v2 \
+      --tree ${refine_tree} \
+      --metadata ${metadata} \
+      --node-data ${branch_len} ${nt_muts} ${aa_muts} \
+      --colors ${colors} \
+      --lat-longs ${lat_long} \
+      --minify-json \
+      --auspice-config ${auspice_config} \
+      --output flu.json
+  """
 }
 
 /**
@@ -218,13 +263,32 @@ workflow
 workflow {
   seq_ch = Channel.fromPath(params.seqs, checkIfExists:true)
   ref_ch = Channel.fromPath(params.ref, checkIfExists:true)
+  meta_ch = Channel.fromPath(params.meta, checkIfExists:true)
+  config_ch = Channel.fromPath([params.auspice, params.colors, params.lat_long], checkIfExists:true).collect()
+
+  if (params.concat) {
+    ref_anno_ch = Channel.fromPath(params.ref_anno, checkIfExists:true)
+    seq_ch = extract_seqs(seq_ch)
+
+  }else if (params.segment != 'NONE') { 
+    ref_anno_ch = ref_ch
+    seq_ch = extract_seqs(seq_ch)
+
+  }else{
+    ref_anno_ch = ref_ch
+  }
 
   align(seq_ch.combine(ref_ch)) | tree
   msa_ch = align.out
-  refine(tree.out.combine(align.out))
+  refine(tree.out.combine(msa_ch).combine(meta_ch))
   ancestral(refine.out.combine(msa_ch))
-  translate(ancestral.out.combine(refine.out.combine(ref_ch)))
-  export(refine.out.combine(ancestral.out.combine(translate.out)))
+  translate(ancestral.out.combine(refine.out.combine(ref_anno_ch)))
+  
+  ch_aa_muts = translate.out
+  if (params.concat) {
+    ch_aa_muts = fix_aa_json(ch_aa_muts)
+  }
+  export(refine.out.combine(ancestral.out).combine(ch_aa_muts), meta_ch, config_ch)
 }
 
 /**
