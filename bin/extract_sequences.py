@@ -1,6 +1,5 @@
 #!/usr/bin/env python3 
 import os, sys
-from Bio import SeqIO
 import re
 import argparse
 from glob import glob 
@@ -17,35 +16,64 @@ def init_parser():
 	
 	return parser
 
+def parse_fasta(filepath):	
+	seqlist = []
+	seq = ''
+	header = ''
+	with open(filepath, 'r') as handle:
+		for line in handle.readlines():
+			if line[0] == '>':
+				if header != '':
+					seqlist.append((header, seq))
+
+				header = line.strip().lstrip('>')
+				seq = ''
+			else:
+				seq += line.strip()
+		seqlist.append((header, seq))
+	
+	return seqlist
+
+def write_fasta(seqs, outpath):
+	with open(outpath, 'w') as outfile:
+		for header, seq in seqs:
+			outfile.write(">" + header + '\n')
+			outfile.write(seq + '\n')
+
 def concatenate_sequences(filepath):
-	sequences = list(SeqIO.parse(filepath, "fasta"))
-	
-	if len(sequences) == 8:
-		concatenated_seq = sequences[0]
-		for seq in sequences[1:]:
-			concatenated_seq += seq
+	sequences = parse_fasta(filepath)
 
-		# rename sequences
-		concatenated_seq.id = re.split("_fluviewer|_segment", sequences[0].id)[0]
-		concatenated_seq.name = concatenated_seq.id
-		concatenated_seq.description = concatenated_seq.id
-		return concatenated_seq
-	
-	print(f"WARN: Skipping {filepath}. Segment sequences are missing")
+	filepath_fields = re.split("(?:_fluviewer)?[\._]consensus", os.path.basename(filepath))
 
-	return None
+	if len(filepath_fields) < 2:
+		print(f"WARN: Could not extract isolate name from file path {filepath}")
+		return None 
+
+	header = filepath_fields[0]
+
+	if len(sequences) != 8:
+		print(f"WARN: Skipping {filepath}. Segment sequences are missing")
+		return None
+	
+	concatenated_seq = ''
+	for _ , seq in sequences:
+		concatenated_seq += seq
+
+	return (header, concatenated_seq)
+
 
 def extract_sequences(filepath, target_segment):
-	sequences = list(SeqIO.parse(filepath, "fasta"))
+	sequences = parse_fasta(filepath)
 
-	for seq in sequences:
-		segment_search = re.search("(?:_fluviewer\||_segment\d_)([A-Z0-9]+)", seq.id)
+	search_segments = [x for x in sequences if re.search(target_segment, x[0])] 
 
-		if segment_search and segment_search.group(1) == target_segment:
-			return seq
+	if len(search_segments) != 1: 
+		print("ERROR: Could not locate a singular sequences that matches the segment of interest. You may need to specify a more advanced regex with --segment")
+		print(search_segments)
+		return None 
 
-	print(f"WARN: Skipping {filepath}. Could not find segment of interest.")
-	return None
+	return search_segments[0]
+
 
 def main(args):
 
@@ -54,23 +82,20 @@ def main(args):
 		exit(1)
 	
 	filepaths = glob(os.path.join(args.inpath, '*consensus*'))
+	output_sequences = []
 
-	if args.concat:
-		output_sequences = []
-		for filepath in filepaths:
-			concatenated_seq = concatenate_sequences(filepath)
-			if concatenated_seq:
-				output_sequences.append(concatenated_seq)
+	for filepath in filepaths:
 
 
-	else:
-		output_sequences = []
-		for filepath in filepaths:
-			extracted_seq = extract_sequences(filepath, args.segment)
-			if extracted_seq:
-				output_sequences.append(extracted_seq)
+		if args.concat:
+			seq = concatenate_sequences(filepath)
+		else:
+			seq = extract_sequences(filepath, args.segment)
 
-	SeqIO.write(output_sequences, args.outpath, "fasta")
+		if seq:
+			output_sequences.append(seq)
+
+	write_fasta(output_sequences, args.outpath)
 
 if __name__ == "__main__":
 	args = init_parser().parse_args()
