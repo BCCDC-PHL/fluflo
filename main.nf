@@ -79,34 +79,6 @@ process definition
 ---------------------------------------------------------------------------------
 */
 
-process extract_seqs{
-  tag "Optional process to automatically extract relevant segments from FluViewer consensus.fa"
-  publishDir "${params.work_dir}/results/", mode: 'copy'
-
-  input:
-  path(sequences_path)
-
-  output:
-  path("extracted_seqs.fasta")
-
-  script:
-  concat = params.concat ? '--concat' : ''
-  segment = params.segment != 'NONE' ? "--segment ${params.segment}" : ''
-  
-  """
-  if [ ! -d ${sequences_path} ]; then
-    echo "ERROR: Provided path must be a directory when running automatic sequence extraction with --concat or --segment."
-    exit 1
-  fi
-
-  extract_sequences.py \
-  --inpath ${sequences_path} \
-  --outpath extracted_seqs.fasta \
-  ${concat} \
-  ${segment}
-  """
-}
-
 process align {
 
   tag "Aligning sequences to ${params.ref} & filling gaps with N"
@@ -212,7 +184,7 @@ process translate {
 }
 
 process fix_aa_json {
-  tag "Fixing aa_muts.json for concatenated workflow."
+  tag "Fixing aa_muts.json when using a GFF3 file for augur translate."
   publishDir "${params.work_dir}/results/", mode: 'copy'
 
   input:
@@ -231,8 +203,7 @@ process export {
   publishDir "${params.work_dir}/auspice", mode: 'copy'
 
   input:
-  tuple file(refine_tree), file(branch_len), file(nt_muts),\
-  file(aa_muts)
+  tuple file(refine_tree), file(branch_len), file(nt_muts), file(aa_muts) 
   file(metadata)
   tuple file(auspice_config), file(colors), file(lat_long)
 
@@ -266,26 +237,29 @@ workflow {
   meta_ch = Channel.fromPath(params.meta, checkIfExists:true)
   config_ch = Channel.fromPath([params.auspice, params.colors, params.lat_long], checkIfExists:true).collect()
 
-  if (params.concat) {
+
+  // Catch invalid reference input combinations 
+  if (!(params.ref =~ /.+\.[Gg]b$/) && params.ref_anno == 'NO_FILE' ){                         // Cannot have an empty --ref_anno parameter if reference is in non-GenBank format
+    error "ERROR: Extra parameter --ref_anno (.gff3 or .gb format) must be specified for augur translate if non-GenBank formatted reference is provided."
+  }else if (params.ref_anno != 'NO_FILE' && !(params.ref_anno =~ /.+\.gff.?|.+\.[Gg]b/) ){     // Can only have .gff or .gb formats in the --ref_anno parameter
+    error "ERROR: Extra parameter --ref_anno must be in either .gff or .gb (GenBank) format."
+  }
+  
+  // Load the ref_anno_ch channel appropriately 
+  if (params.ref_anno == 'NO_FILE'){                                          // Copy the ref_ch channel if in GenBank format (ref_ch can be reused as ref_anno_ch)
+    ref_anno_ch = ref_ch
+  }else{                                                                      // Load new channel from scratch if different reference annotation format specified
     ref_anno_ch = Channel.fromPath(params.ref_anno, checkIfExists:true)
-    seq_ch = extract_seqs(seq_ch)
-
-  }else if (params.segment != 'NONE') { 
-    ref_anno_ch = ref_ch
-    seq_ch = extract_seqs(seq_ch)
-
-  }else{
-    ref_anno_ch = ref_ch
   }
 
   align(seq_ch.combine(ref_ch)) | tree
   msa_ch = align.out
   refine(tree.out.combine(msa_ch).combine(meta_ch))
   ancestral(refine.out.combine(msa_ch))
-  translate(ancestral.out.combine(refine.out.combine(ref_anno_ch)))
+  translate(ancestral.out.combine(refine.out).combine(ref_anno_ch))
   
   ch_aa_muts = translate.out
-  if (params.concat) {
+  if (params.ref_anno != 'NO_FILE' && params.ref_anno =~ /.+\.gff.?/ ) {                                     // If gff annotation format used, augur translate outputs need to be fixed (causes downstream schema error)
     ch_aa_muts = fix_aa_json(ch_aa_muts)
   }
   export(refine.out.combine(ancestral.out).combine(ch_aa_muts), meta_ch, config_ch)
