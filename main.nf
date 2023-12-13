@@ -188,13 +188,13 @@ process fix_aa_json {
   publishDir "${params.work_dir}/results/", mode: 'copy'
 
   input:
-  file(aa_muts_json)
+  tuple file(aa_muts_json), file(nt_muts_json)
 
   output:
   file("aa_muts_fix.json")
 
   """
-  fix_aa_muts.py ${aa_muts_json} aa_muts_fix.json
+  fix_aa_muts.py --aa_json ${aa_muts_json} --nt_json ${nt_muts_json} --outpath aa_muts_fix.json
   """
 }
 
@@ -259,8 +259,8 @@ workflow {
   translate(ancestral.out.combine(refine.out).combine(ref_anno_ch))
   
   ch_aa_muts = translate.out
-  if (params.ref_anno != 'NO_FILE' && params.ref_anno =~ /.+\.gff.?/ ) {                                     // If gff annotation format used, augur translate outputs need to be fixed (causes downstream schema error)
-    ch_aa_muts = fix_aa_json(ch_aa_muts)
+  if (params.ref_anno != 'NO_FILE' && params.ref_anno =~ /.+\.gff.?/ ) {        // If gff annotation format used, augur translate outputs need to be fixed (causes downstream schema error)
+    ch_aa_muts = fix_aa_json(ch_aa_muts.combine(ancestral.out))
   }
   export(refine.out.combine(ancestral.out).combine(ch_aa_muts), meta_ch, config_ch)
 }
