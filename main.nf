@@ -26,7 +26,8 @@ Mandatory arguments:
 
 Optional arguments:
  --seqs                         Multi-fasta file containing consensus sequences of interest [./data/sequences.fasta]
- --ref                          Reference genome used to align reads to during guided assembly [./config/Ref.gb]
+ --ref                          Reference genome used to align reads to during guided assembly [./config/Ref.gb (default); *.fasta file also accepted here]
+ --ref_anno                     Reference genome annotation file; only required when using a FASTA under --ref [*.gb / *.gff file accepted here]
  --meta                         File containing metadata for sequences under analysis [./data/metadata.csv]
  --drop_strains                 Excluded strains/ samples [./config/dropped_strains.txt]
  --colors                       Colors used in final auspice visualization [./config/colors.csv]
@@ -239,14 +240,17 @@ workflow {
 
 
   // Catch invalid reference input combinations 
-  if (!(params.ref =~ /.+\.[Gg]b$/) && params.ref_anno == 'NO_FILE' ){                         // Cannot have an empty --ref_anno parameter if reference is in non-GenBank format
-    error "ERROR: Extra parameter --ref_anno (.gff3 or .gb format) must be specified for augur translate if non-GenBank formatted reference is provided."
-  }else if (params.ref_anno != 'NO_FILE' && !(params.ref_anno =~ /.+\.gff.?|.+\.[Gg]b/) ){     // Can only have .gff or .gb formats in the --ref_anno parameter
-    error "ERROR: Extra parameter --ref_anno must be in either .gff or .gb (GenBank) format."
+  ref_gb_format = (params.ref =~ /.+\.[Gg]b$/)
+
+  if (!ref_gb_format && params.ref_anno == 'NO_FILE' ){                         // Cannot have an empty --ref_anno parameter if reference is in non-GenBank format
+    error "ERROR: Parameter --ref_anno (.gff3 or .gb format) must be specified if non-GenBank formatted reference is provided under --ref."
+  }
+  if (params.ref_anno != 'NO_FILE' && !(params.ref_anno =~ /.+\.gff.?|.+\.[Gg]b/) ){     // Can only have .gff or .gb formats in the --ref_anno parameter
+    error "ERROR: Parameter --ref_anno must be in either .gff or .gb (GenBank) format."
   }
   
   // Load the ref_anno_ch channel appropriately 
-  if (params.ref_anno == 'NO_FILE'){                                          // Copy the ref_ch channel if in GenBank format (ref_ch can be reused as ref_anno_ch)
+  if (ref_gb_format){                                                         // Copy the ref_ch channel if in GenBank format (ref_ch can be reused as ref_anno_ch)
     ref_anno_ch = ref_ch
   }else{                                                                      // Load new channel from scratch if different reference annotation format specified
     ref_anno_ch = Channel.fromPath(params.ref_anno, checkIfExists:true)
@@ -259,6 +263,7 @@ workflow {
   translate(ancestral.out.combine(refine.out).combine(ref_anno_ch))
   
   ch_aa_muts = translate.out
+
   if (params.ref_anno != 'NO_FILE' && params.ref_anno =~ /.+\.gff.?/ ) {        // If gff annotation format used, augur translate outputs need to be fixed (causes downstream schema error)
     ch_aa_muts = fix_aa_json(ch_aa_muts.combine(ancestral.out))
   }
