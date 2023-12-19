@@ -84,8 +84,8 @@ command line.
 
 - Multi-fasta file containing consensus sequences of interest [./data/sequences.fasta]
 - One of the two following configurations is required to describe the reference genome:
-  1. A single GenBank file describing the reference genome used for both alignment and amino acid annotation [./config/Ref.gb] OR 
-  2. A reference sequence in FASTA format [./config/Ref.fasta] AND a reference annotation in GFF format [./config/Ref.gff3].
+  1. A single GenBank file passed to `--ref` describing the reference genome used for both alignment and amino acid annotation [./config/Ref.gb] OR 
+  2. A reference sequence in FASTA format under `--ref` AND a reference annotation in GFF format under `--ref_anno`.
 - File containing metadata for sequences under analysis [./data/metadata.csv]
 - Excluded strains/ samples [./config/dropped_strains.txt]
 - Colors used in final auspice visualization [./config/colors.csv]
