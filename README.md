@@ -83,7 +83,9 @@ each run is the input directory, which can be specified with the --work_dir flag
 command line.
 
 - Multi-fasta file containing consensus sequences of interest [./data/sequences.fasta]
-- Reference genome used to align reads to during guided assembly [./config/Ref.gb]
+- One of the two following configurations is required to describe the reference genome:
+  1. A single GenBank file describing the reference genome used for both alignment and amino acid annotation [./config/Ref.gb] OR 
+  2. A reference sequence in FASTA format [./config/Ref.fasta] AND a reference annotation in GFF format [./config/Ref.gff3].
 - File containing metadata for sequences under analysis [./data/metadata.csv]
 - Excluded strains/ samples [./config/dropped_strains.txt]
 - Colors used in final auspice visualization [./config/colors.csv]
