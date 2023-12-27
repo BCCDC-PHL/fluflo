@@ -26,7 +26,8 @@ Mandatory arguments:
 
 Optional arguments:
  --seqs                         Multi-fasta file containing consensus sequences of interest [./data/sequences.fasta]
- --ref                          Reference genome used to align reads to during guided assembly [./config/Ref.gb]
+ --ref                          Reference genome used to align reads to during guided assembly [./config/Ref.gb (default); *.fasta file also accepted here]
+ --ref_anno                     Reference genome annotation file; only required when using a FASTA under --ref [*.gb / *.gff file accepted here]
  --meta                         File containing metadata for sequences under analysis [./data/metadata.csv]
  --drop_strains                 Excluded strains/ samples [./config/dropped_strains.txt]
  --colors                       Colors used in final auspice visualization [./config/colors.csv]
@@ -126,7 +127,7 @@ process refine {
   publishDir "${params.work_dir}/results/", mode: 'copy'
 
   input:
-  tuple file(tree), file(msa)
+  tuple file(tree), file(msa), file(metadata)
 
   output:
   tuple path("tree.nwk"), path("branch_lengths.json")
@@ -135,7 +136,7 @@ process refine {
   augur refine \
       --tree ${tree} \
       --alignment ${msa} \
-      --metadata ${params.meta} \
+      --metadata ${metadata} \
       --timetree \
       --keep-root \
       --divergence-units ${params.divergence_units} \
@@ -154,14 +155,14 @@ process ancestral {
     output:
     path("nt_muts.json")
 
-        """
-        augur ancestral \
-            --tree ${refine_tree} \
-            --alignment ${msa} \
-            --output-node-data nt_muts.json \
-            --keep-overhangs \
-            --keep-ambiguous
-        """
+    """
+    augur ancestral \
+        --tree ${refine_tree} \
+        --alignment ${msa} \
+        --output-node-data nt_muts.json \
+        --keep-overhangs \
+        --keep-ambiguous
+    """
 }
 
 process translate {
@@ -183,30 +184,46 @@ process translate {
       """
 }
 
+process fix_aa_json {
+  tag "Fixing aa_muts.json when using a GFF3 file for augur translate."
+  publishDir "${params.work_dir}/results/", mode: 'copy'
+
+  input:
+  tuple file(aa_muts_json), file(nt_muts_json)
+
+  output:
+  file("aa_muts_fix.json")
+
+  """
+  fix_aa_muts.py --aa_json ${aa_muts_json} --nt_json ${nt_muts_json} --outpath aa_muts_fix.json
+  """
+}
+
 process export {
   tag "Exporting data files for auspice"
   publishDir "${params.work_dir}/auspice", mode: 'copy'
 
   input:
-  tuple file(refine_tree), file(branch_len), file(nt_muts),\
-  file(aa_muts)
+  tuple file(refine_tree), file(branch_len), file(nt_muts), file(aa_muts) 
+  file(metadata)
+  tuple file(auspice_config), file(colors), file(lat_long)
 
   output:
-  file("flu_na.json")
+  file("flu.json")
 
-      """
-      export AUGUR_RECURSION_LIMIT=${params.recursion_limit}
+  """
+  export AUGUR_RECURSION_LIMIT=${params.recursion_limit}
 
-      augur export v2 \
-          --tree ${refine_tree} \
-          --metadata ${params.meta} \
-          --node-data ${branch_len} ${nt_muts} ${aa_muts} \
-          --colors ${params.colors} \
-          --lat-longs ${params.lat_long} \
-          --minify-json \
-          --auspice-config ${params.auspice} \
-          --output flu_na.json
-      """
+  augur export v2 \
+      --tree ${refine_tree} \
+      --metadata ${metadata} \
+      --node-data ${branch_len} ${nt_muts} ${aa_muts} \
+      --colors ${colors} \
+      --lat-longs ${lat_long} \
+      --minify-json \
+      --auspice-config ${auspice_config} \
+      --output flu.json
+  """
 }
 
 /**
@@ -218,13 +235,39 @@ workflow
 workflow {
   seq_ch = Channel.fromPath(params.seqs, checkIfExists:true)
   ref_ch = Channel.fromPath(params.ref, checkIfExists:true)
+  meta_ch = Channel.fromPath(params.meta, checkIfExists:true)
+  config_ch = Channel.fromPath([params.auspice, params.colors, params.lat_long], checkIfExists:true).collect()
+
+
+  // Catch invalid reference input combinations 
+  ref_gb_format = (params.ref =~ /.+\.[Gg]b$/)
+
+  if (!ref_gb_format && params.ref_anno == 'NO_FILE' ){                         // Cannot have an empty --ref_anno parameter if reference is in non-GenBank format
+    error "ERROR: Parameter --ref_anno (.gff3 or .gb format) must be specified if non-GenBank formatted reference is provided under --ref."
+  }
+  if (params.ref_anno != 'NO_FILE' && !(params.ref_anno =~ /.+\.gff.?|.+\.[Gg]b/) ){     // Can only have .gff or .gb formats in the --ref_anno parameter
+    error "ERROR: Parameter --ref_anno must be in either .gff or .gb (GenBank) format."
+  }
+  
+  // Load the ref_anno_ch channel appropriately 
+  if (ref_gb_format){                                                         // Copy the ref_ch channel if in GenBank format (ref_ch can be reused as ref_anno_ch)
+    ref_anno_ch = ref_ch
+  }else{                                                                      // Load new channel from scratch if different reference annotation format specified
+    ref_anno_ch = Channel.fromPath(params.ref_anno, checkIfExists:true)
+  }
 
   align(seq_ch.combine(ref_ch)) | tree
   msa_ch = align.out
-  refine(tree.out.combine(align.out))
+  refine(tree.out.combine(msa_ch).combine(meta_ch))
   ancestral(refine.out.combine(msa_ch))
-  translate(ancestral.out.combine(refine.out.combine(ref_ch)))
-  export(refine.out.combine(ancestral.out.combine(translate.out)))
+  translate(ancestral.out.combine(refine.out).combine(ref_anno_ch))
+  
+  ch_aa_muts = translate.out
+
+  if (params.ref_anno != 'NO_FILE' && params.ref_anno =~ /.+\.gff.?/ ) {        // If gff annotation format used, augur translate outputs need to be fixed (causes downstream schema error)
+    ch_aa_muts = fix_aa_json(ch_aa_muts.combine(ancestral.out))
+  }
+  export(refine.out.combine(ancestral.out).combine(ch_aa_muts), meta_ch, config_ch)
 }
 
 /**
