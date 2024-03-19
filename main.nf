@@ -133,7 +133,7 @@ process refine {
   tuple path("tree.nwk"), path("branch_lengths.json")
 
   script:
-  root_value = params.root_name ? "--root ${params.root}" : "--keep-root" 
+  root_value = params.root_name ? "--root ${params.root_name}" : "--keep-root" 
   """
   augur refine \
       --tree ${tree} \
