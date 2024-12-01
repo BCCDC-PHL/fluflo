@@ -110,11 +110,11 @@ process tree {
 
   output:
   path("aligned.fasta.treefile")
-
+  
   """
   iqtree -alninfo \
   -ninit 10 \
-  -n 10 \
+  ${params.bootstrap} \
   -me 0.05 \
   -nt ${task.cpus} \
   -s ${aln} \
