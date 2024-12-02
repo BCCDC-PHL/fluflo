@@ -102,7 +102,7 @@ process align {
 }
 
 process tree {
-  tag "Building IQTREE - GTR+I+R method - 10 iterations - FAST mode"
+  tag "Building IQTREE - model: ${params.sub_model} - iterations: ${params.bootstrap}"
   publishDir "${params.work_dir}/results/", mode: 'copy'
 
   input:
