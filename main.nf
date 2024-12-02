@@ -109,7 +109,8 @@ process tree {
   file(aln)
 
   output:
-  path("aligned.fasta.treefile")
+  path("aligned.fasta.treefile"), emit: treefile
+  path("aligned.fasta.contree"), optional: true, emit: contree
   
   """
   iqtree -alninfo \
@@ -260,7 +261,8 @@ workflow {
 
   align(seq_ch.combine(ref_ch)) | tree
   msa_ch = align.out
-  refine(tree.out.combine(msa_ch).combine(meta_ch))
+  tree_ch = tree.out.contree.ifEmpty(tree.out.treefile)
+  refine(tree_ch.combine(msa_ch).combine(meta_ch))
   ancestral(refine.out.combine(msa_ch))
   translate(ancestral.out.combine(refine.out).combine(ref_anno_ch))
   
