@@ -102,14 +102,15 @@ process align {
 }
 
 process tree {
-  tag "Building IQTREE - GTR+I+R method - 10 iterations - FAST mode"
+  tag "Building IQTREE - model: ${params.sub_model} - iterations: ${params.bootstrap}"
   publishDir "${params.work_dir}/results/", mode: 'copy'
 
   input:
   file(aln)
 
   output:
-  path("aligned.fasta.treefile")
+  path("aligned.fasta.treefile"), emit: treefile
+  path("aligned.fasta.contree"), optional: true, emit: contree
   
   """
   iqtree -alninfo \
@@ -118,7 +119,7 @@ process tree {
   -me 0.05 \
   -nt ${task.cpus} \
   -s ${aln} \
-  -m GTR+I+R 
+  -m ${params.sub_model}
   """
 }
 
@@ -247,10 +248,11 @@ workflow {
   if (!ref_gb_format && params.ref_anno == 'NO_FILE' ){                         // Cannot have an empty --ref_anno parameter if reference is in non-GenBank format
     error "ERROR: Parameter --ref_anno (.gff3 or .gb format) must be specified if non-GenBank formatted reference is provided under --ref."
   }
-  if (params.ref_anno != 'NO_FILE' && !(params.ref_anno =~ /.+\.gff.?|.+\.[Gg]b/) ){     // Can only have .gff or .gb formats in the --ref_anno parameter
+  if (params.ref_anno != 'NO_FILE' && !(params.ref_anno =~ /.+\.gff.?|.+\.[Gg]b/) ){     
     error "ERROR: Parameter --ref_anno must be in either .gff or .gb (GenBank) format."
   }
-  
+  // Can only have .gff or .gb formats in the --ref_anno parameter
+
   // Load the ref_anno_ch channel appropriately 
   if (ref_gb_format){                                                         // Copy the ref_ch channel if in GenBank format (ref_ch can be reused as ref_anno_ch)
     ref_anno_ch = ref_ch
@@ -260,13 +262,15 @@ workflow {
 
   align(seq_ch.combine(ref_ch)) | tree
   msa_ch = align.out
-  refine(tree.out.combine(msa_ch).combine(meta_ch))
+  tree_ch = tree.out.contree.ifEmpty(tree.out.treefile)
+  refine(tree_ch.combine(msa_ch).combine(meta_ch))
   ancestral(refine.out.combine(msa_ch))
   translate(ancestral.out.combine(refine.out).combine(ref_anno_ch))
   
   ch_aa_muts = translate.out
 
-  if (params.ref_anno != 'NO_FILE' && params.ref_anno =~ /.+\.gff.?/ ) {        // If gff annotation format used, augur translate outputs need to be fixed (causes downstream schema error)
+// If gff annotation format used, augur translate outputs need to be fixed - causes downstream schema error
+  if (params.ref_anno != 'NO_FILE' && params.ref_anno =~ /.+\.gff.?/ ) {        
     ch_aa_muts = fix_aa_json(ch_aa_muts.combine(ancestral.out))
   }
   export(refine.out.combine(ancestral.out).combine(ch_aa_muts), meta_ch, config_ch)
