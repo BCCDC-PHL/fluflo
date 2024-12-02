@@ -119,7 +119,7 @@ process tree {
   -me 0.05 \
   -nt ${task.cpus} \
   -s ${aln} \
-  -m GTR+I+R 
+  -m ${params.sub_model}
   """
 }
 
