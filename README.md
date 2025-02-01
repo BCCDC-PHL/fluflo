@@ -119,7 +119,71 @@ reports:
 
 ## Workflow
 
-![image](/pics/fluflo_workflow.png)
+```mermaid
+flowchart TD
+    p0((sequences.fasta))
+    p1((Ref.gb/
+    reference.fasta))
+    p2((metadata.csv))
+    p3((auspice_config.json,
+    colors.csv,
+    lat_longs.csv))
+    p4([collect])
+    p5((ref_anno.gb/
+    ref_anno.gff3))
+    p6([combine])
+    p7[align]
+    p8[tree]
+    p9([concat])
+    p10([first])
+    p11([combine])
+    p12([combine])
+    p13[refine]
+    p14([combine])
+    p15[ancestral]
+    p16([combine])
+    p17([combine])
+    p18[translate]
+    p19([combine])
+    p20[fix_aa_json]
+    p21([combine])
+    p22([combine])
+    p23[export]
+    p24(( ))
+    p0 -->|seq_ch| p6
+    p1 -->|ref_ch| p6
+    p2 -->|meta_ch| p12
+    p3 --> p4
+    p4 -->|config_ch| p23
+    p5 -->|ref_anno_ch| p17
+    p6 --> p7
+    p7 --> p8
+    p8 --> p9
+    p8 --> p9
+    p9 --> p10
+    p10 -->|tree_ch| p11
+    p7 --> p11
+    p11 --> p12
+    p12 --> p13
+    p13 --> p14
+    p7 --> p14
+    p14 --> p15
+    p15 --> p16
+    p13 --> p16
+    p16 --> p17
+    p17 --> p18
+    p18 --> p19
+    p15 --> p19
+    p19 --> p20
+    p20 --> p22
+    p13 --> p21
+    p15 --> p21
+    p21 --> p22
+    p22 --> p23
+    p2 -->|meta_ch| p23
+    p23 --> p24
+
+```
 
 
 ## References
