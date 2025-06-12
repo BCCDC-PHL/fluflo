@@ -301,11 +301,4 @@ workflow.onComplete {
     sendMail(to: '', subject: 'Flu Tree Analysis Complete', body: msg)
 }
 
-
-
-process clean {
-  tag "Removing Nextflow work directory?"
-    shell:
-        "rm -rfv work"
-}
 */
