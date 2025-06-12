@@ -22,9 +22,10 @@ nextflow run main.nf -profile conda [OPTIONS]
 Mandatory arguments:
  --work_dir                     User's directory that contains input 'config' & 'data' folders.
                                 Ensure trailing / is present in absolute path. If not specified,
-                                will run on a test dataset located at /home/jess.cal/flu/TestSet_FluTree20_HA/
+                                will run on a test dataset.
 
 Optional arguments:
+ --out_dir                      Output directory. Default behaviour is to write results to input directory [/path/to/work_dir/]
  --seqs                         Multi-fasta file containing consensus sequences of interest [./data/sequences.fasta]
  --ref                          Reference genome used to align reads to during guided assembly [./config/Ref.gb (default); *.fasta file also accepted here]
  --ref_anno                     Reference genome annotation file; only required when using a FASTA under --ref [*.gb / *.gff file accepted here]
@@ -83,7 +84,7 @@ process definition
 process align {
 
   tag "Aligning sequences to ${params.ref} & filling gaps with N"
-  publishDir "${params.work_dir}/results/", mode: 'copy'
+  publishDir "${params.out_dir}/results/", mode: 'copy'
 
   input:
   tuple file(sequences), file(reference)
@@ -103,7 +104,7 @@ process align {
 
 process tree {
   tag "Building IQTREE - model: ${params.sub_model} - iterations: ${params.bootstrap}"
-  publishDir "${params.work_dir}/results/", mode: 'copy'
+  publishDir "${params.out_dir}/results/", mode: 'copy'
 
   input:
   file(aln)
@@ -125,7 +126,7 @@ process tree {
 
 process refine {
   tag "Refining phylogeny with Augur"
-  publishDir "${params.work_dir}/results/", mode: 'copy'
+  publishDir "${params.out_dir}/results/", mode: 'copy'
 
   input:
   tuple file(tree), file(msa), file(metadata)
@@ -150,7 +151,7 @@ process refine {
 
 process ancestral {
     tag "Reconstructing ancestral sequences and mutations"
-    publishDir "${params.work_dir}/results/", mode: 'copy'
+    publishDir "${params.out_dir}/results/", mode: 'copy'
 
     input:
     tuple file(refine_tree), file(branch_len), file(msa)
@@ -170,7 +171,7 @@ process ancestral {
 
 process translate {
   tag "Translating amino acid sequences"
-  publishDir "${params.work_dir}/results", mode: 'copy'
+  publishDir "${params.out_dir}/results", mode: 'copy'
 
   input:
   tuple file(node_data), file(refine_tree), file(branch_len), file(ref)
@@ -189,7 +190,7 @@ process translate {
 
 process fix_aa_json {
   tag "Fixing aa_muts.json when using a GFF3 file for augur translate."
-  publishDir "${params.work_dir}/results/", mode: 'copy'
+  publishDir "${params.out_dir}/results/", mode: 'copy'
 
   input:
   tuple file(aa_muts_json), file(nt_muts_json)
@@ -204,7 +205,7 @@ process fix_aa_json {
 
 process export {
   tag "Exporting data files for auspice"
-  publishDir "${params.work_dir}/auspice", mode: 'copy'
+  publishDir "${params.out_dir}/auspice", mode: 'copy'
 
   input:
   tuple file(refine_tree), file(branch_len), file(nt_muts), file(aa_muts) 
