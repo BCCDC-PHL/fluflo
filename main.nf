@@ -298,7 +298,7 @@ workflow.onComplete {
         """
         .stripIndent()
 
-    sendMail(to: '', subject: 'Flu Tree Analysis Complete on Sabin', body: msg)
+    sendMail(to: '', subject: 'Flu Tree Analysis Complete', body: msg)
 }
 
 
