@@ -68,10 +68,15 @@ program introduction
 
 // this prints program header with mandatory input
 log.info """
-
-🅕 🅛 🅤 Ⓕ Ⓛ Ⓞ
+    ___ _           ___ _       
+   / __) |         / __) |      
+ _| |__| | _   _ _| |__| | ___  
+(_   __) || | | (_   __) |/ _ \\ 
+  | |  | || |_| | | |  | | |_| |
+  |_|   \\_)____/  |_|   \\_)___/                              
 \n========================================
 data directory: ${params.work_dir}
+results directory: ${params.out_dir}
 
 """
 
