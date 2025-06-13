@@ -13,7 +13,7 @@ and easily adjusted.
 ## Table of Contents
 
 - [Introduction](#introduction)
-- [Quick-Start Guide](#quick-start%guide)
+- [Quick-Start Guide](#quick-start-guide)
 - [Dependencies](#dependencies)
 - [Installation](#installation)
 - [Input](#input)
@@ -84,11 +84,7 @@ command line.
 - Multi-fasta file containing consensus sequences of interest [./data/sequences.fasta]
 - One of the two following configurations is required to describe the reference genome:
   1. A single GenBank file passed to `--ref` describing the reference genome used for both alignment and amino acid annotation [./config/Ref.gb] OR 
-  2. A reference sequence in FASTA format under `--ref` AND a reference annotation in GFF format under <p>`--ref_anno`
-  <a href="#gff-warning" style="text-decoration: none;">
-    <span style="color: #d35400; font-size: 1.2em; vertical-align: super;">*</span>
-  </a>.
-</p>
+  2. A reference sequence in FASTA format under `--ref` AND a reference annotation in GFF format under `--ref_anno` [⚠️](#warning).
 
 - File containing metadata for sequences under analysis [./data/metadata.csv]
 - Excluded strains/ samples [./config/dropped_strains.txt]
@@ -96,9 +92,8 @@ command line.
 - Sample latitudes and longitudes [./config/lat_longs.csv]
 - Specifications for visualization in auspice (ex. title) [./config/auspice_config.json]
 
-<div id="gff-warning" style="border-left: 4px solid #f39c12; padding: 0.5em; background: #fffbe6;">
-  <strong>⚠️ Warning:</strong> When generating phylogenies from concatenated sequences with <code>fluflo >=v1.0.0</code>, the *.gff3 file passed with <code>--ref_anno</code> must not contain lines specifying regions that conflict with the assumption of a single contiguous sequence as specified by the sequence-region line in the header.
-</div>
+#### Warning: 
+When generating phylogenies from concatenated sequences with `fluflo >=v1.0.0`, the *.gff3 file passed with `--ref_anno` must not contain lines specifying regions that conflict with the assumption of a single contiguous sequence as specified by the sequence-region line in the header.
 
 ![error](/pics/concat_gff_example_error.png) ![success](/pics/concat_gff_example_correct.png) 
 
