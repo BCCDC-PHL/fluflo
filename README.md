@@ -84,18 +84,29 @@ command line.
 - Multi-fasta file containing consensus sequences of interest [./data/sequences.fasta]
 - One of the two following configurations is required to describe the reference genome:
   1. A single GenBank file passed to `--ref` describing the reference genome used for both alignment and amino acid annotation [./config/Ref.gb] OR 
-  2. A reference sequence in FASTA format under `--ref` AND a reference annotation in GFF format under `--ref_anno`.
+  2. A reference sequence in FASTA format under `--ref` AND a reference annotation in GFF format under <p>`--ref_anno`
+  <a href="#gff-warning" style="text-decoration: none;">
+    <span style="color: #d35400; font-size: 1.2em; vertical-align: super;">*</span>
+  </a>.
+</p>
+
 - File containing metadata for sequences under analysis [./data/metadata.csv]
 - Excluded strains/ samples [./config/dropped_strains.txt]
 - Colors used in final auspice visualization [./config/colors.csv]
 - Sample latitudes and longitudes [./config/lat_longs.csv]
 - Specifications for visualization in auspice (ex. title) [./config/auspice_config.json]
 
+<div id="gff-warning" style="border-left: 4px solid #f39c12; padding: 0.5em; background: #fffbe6;">
+  <strong>⚠️ Warning:</strong> When generating phylogenies from concatenated sequences with <code>fluflo >=v1.0.0</code>, the *.gff3 file passed with <code>--ref_anno</code> must not contain lines specifying regions that conflict with the assumption of a single contiguous sequence as specified by the sequence-region line in the header.
+</div>
+
+![error](/pics/concat_gff_example_error.png) ![success](/pics/concat_gff_example_correct.png) 
+
 ## Output
 
-The output directories are 'results', 'auspice', and 'reports'.
+The output directories are `results`, `auspice`, and `reports`. The default location of these folders is the same as the input directory set by `--work_dir` but can be written to an alternative directory using `--out_dir`.
 
-results:
+`results`:
 - aligned.fasta
 - aligned.fasta.treefile
 - branch_lengths.json
@@ -108,10 +119,10 @@ produced with the original snakefile because they are extraneous to the analysis
 thus, designed not to be captured in Nextflow channels and copied to the results
 directory.
 
-auspice:
+`auspice`:
 - flu_na.json
 
-reports:
+`reports`:
 - fluflo_usage.html
 - fluflo_timeline.html
 - fluflo_dag.html
