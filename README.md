@@ -95,7 +95,11 @@ command line.
 #### Warning: 
 When generating phylogenies from concatenated sequences with `fluflo >=v1.0.0`, the *.gff3 file passed with `--ref_anno` must not contain lines specifying regions that conflict with the assumption of a single contiguous sequence as specified by the sequence-region line in the header.
 
-![error](/pics/concat_gff_example_error.png) ![success](/pics/concat_gff_example_correct.png) 
+**causes error:**
+![error](/pics/concat_gff_example_error.png) 
+
+**runs successfully:**
+![success](/pics/concat_gff_example_correct.png) 
 
 ## Output
 
