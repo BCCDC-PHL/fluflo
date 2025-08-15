@@ -221,8 +221,6 @@ process export {
   file("flu.json")
 
   """
-  export AUGUR_RECURSION_LIMIT=${params.recursion_limit}
-
   augur export v2 \
       --tree ${refine_tree} \
       --metadata ${metadata} \
