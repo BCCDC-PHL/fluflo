@@ -16,6 +16,7 @@ and easily adjusted.
 - [Quick-Start Guide](#quick-start-guide)
 - [Dependencies](#dependencies)
 - [Installation](#installation)
+- [Usage](#usage)
 - [Input](#input)
 - [Output](#output)
 - [Workflow](#workflow)
@@ -75,6 +76,33 @@ or run directly using:
 nextflow run BCCDC-PHL/fluflo \
 -profile conda \
 --work_dir /home/user/flu/input_data/
+```
+
+## Usage
+
+Basic run:
+```
+nextflow run BCCDC-PHL/fluflo \
+-profile conda \
+--work_dir /path/to/flu/input_data/
+```
+Running with concatenated sequences:
+```
+nextflow run BCCDC-PHL/fluflo \
+-profile conda \
+--work_dir /path/to/flu/input_data/
+--out_dir /path/to/new/dir/ \
+--ref /path/to/input_data/config/concat.fasta \
+--ref_anno /path/to/input_data/config/concat.gff3
+```
+Running with high memorgy (64GB) and bootstrapping:
+```
+nextflow run BCCDC-PHL/fluflo \
+-r v1.0.1\
+-profile conda,high_mem \
+--work_dir /path/to/flu/input_data/ \
+--out_dir /path/to/results/ \
+--bootstrap '-B 1000 --bnni'
 ```
 
 ## Input
