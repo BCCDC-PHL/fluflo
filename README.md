@@ -64,13 +64,17 @@ accesible to compute nodes by adding ```--conda_cache /path/to/new/location/```.
 
 To copy the program into a directory of your choice, from desired directory run:
 ```
-git clone https://github.com/j3551ca/fluflo.git
+git clone https://github.com/BCCDC-PHL/fluflo.git
 cd fluflo
-nextflow run main.nf -profile conda --work_dir /home/user/flu/input_data/
+nextflow run main.nf \
+-profile conda \
+--work_dir /home/user/flu/input_data/
 ```
 or run directly using:
 ```
-nextflow run j3551ca/fluflo -profile conda --work_dir /home/user/flu/input_data/
+nextflow run BCCDC-PHL/fluflo \
+-profile conda \
+--work_dir /home/user/flu/input_data/
 ```
 
 ## Input
@@ -144,8 +148,6 @@ flowchart TD
     p6([combine])
     p7[align]
     p8[tree]
-    p9([concat])
-    p10([first])
     p11([combine])
     p12([combine])
     p13[refine]
@@ -168,10 +170,7 @@ flowchart TD
     p5 -->|ref_anno_ch| p17
     p6 --> p7
     p7 --> p8
-    p8 --> p9
-    p8 --> p9
-    p9 --> p10
-    p10 -->|tree_ch| p11
+    p8 -->|tree_ch| p11
     p7 --> p11
     p11 --> p12
     p12 --> p13
