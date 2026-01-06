@@ -105,6 +105,15 @@ When generating phylogenies from concatenated sequences with `fluflo >=v1.0.0`, 
 **runs successfully:**
 ![success](/pics/concat_gff_example_correct.png) 
 
+### Bootstrapping:
+
+Visualization of bootstrap support is implemented in fluflo v1.0.1. Bootstrap parameters are passed to IQ-Tree via the `--bootstrap` parameter. 
+
+#### Warning: 
+Note that using UFBoot (`-B`) and SH-aLRT (`--alrt`) in conjuction as recommended by IQ-Tree results in incorrect parsing by `augur refine` because node names are replaced by SH-aLRT/UFBoot support values (see [Issue #856](https://github.com/nextstrain/augur/issues/856) of Nextstrain/augur). 
+
+This was confirmed by analyzing 5 trees from the fluflo_v0.4.0:fluflo_v1.0.1 verification dataset using `-B 1000 --alrt 1000`. The resulting trees either failed (3/5) or were produced and could be visualized but without branch support values (2/5) (ie. the nodes were labelled incorrectly but matched with JSON node-data files like nt_muts.json, aa_mut.json, branch_lengths.json). As a result of the lack of reliability displayed on branches and lack of reliability in successful generation of trees, using `-B` & `--alrt` together is not recommended until parsing is fixed. Using `--alrt` independently was not tested, but would likely function properly, as it is a single value like nonparametric or UFBoot support values as opposed to two (SH-aLRT/UFBoot), which are parsed as node names instead of confidence values. 
+
 ## Output
 
 The output directories are `results`, `auspice`, and `reports`. The default location of these folders is the same as the input directory set by `--work_dir` but can be written to an alternative directory using `--out_dir`.
@@ -112,6 +121,7 @@ The output directories are `results`, `auspice`, and `reports`. The default loca
 `results`:
 - aligned.fasta
 - aligned.fasta.treefile
+- aligned.fasta.contree (only when bootstrapping)
 - branch_lengths.json
 - tree.nwk
 - nt_muts.json
